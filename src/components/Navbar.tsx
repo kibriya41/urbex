@@ -21,6 +21,9 @@ export default function Navbar() {
 
   const { data: session, isPending } = useSession();
 
+  // Better-Auth stores custom role in additionalFields — cast to access it
+  const userRole = (session?.user as any)?.role as string | undefined;
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -146,6 +149,22 @@ export default function Navbar() {
                           {session.user.email}
                         </span>
                       </div>
+                      {/* Admin Dashboard shortcut — only for admin/moderator */}
+                      {(userRole === "admin" || userRole === "moderator") && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setDropdownOpen(false)}
+                          className="px-3.5 py-2 text-xs font-semibold text-[var(--rust)] hover:bg-[var(--rust)]/5 transition-colors text-left flex items-center gap-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                          </svg>
+                          Admin Dashboard
+                        </Link>
+                      )}
                       <Link
                         href="/wishlist"
                         onClick={() => setDropdownOpen(false)}
@@ -235,6 +254,22 @@ export default function Navbar() {
 
           {!isPending && session?.user && (
             <>
+              {/* Admin dashboard — mobile, only for admin/moderator */}
+              {(userRole === "admin" || userRole === "moderator") && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMenuOpen(false)}
+                  className="py-2.5 text-sm font-semibold border-b border-[var(--border)] text-[var(--rust)] hover:text-[#9C4830] transition-colors flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                  </svg>
+                  Admin Dashboard
+                </Link>
+              )}
               <Link
                 href="/wishlist"
                 onClick={() => setMenuOpen(false)}
