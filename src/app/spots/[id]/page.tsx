@@ -58,6 +58,7 @@ export default function SpotDetailPage() {
   const [reviewError, setReviewError] = useState("");
 
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [togglingWishlist, setTogglingWishlist] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -79,6 +80,52 @@ export default function SpotDetailPage() {
       loadData();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!session?.user?.id || !id) return;
+    async function checkWishlist() {
+      try {
+        const res = await fetch("/api/wishlist");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.spotIds)) {
+            setIsWishlisted(data.spotIds.includes(id));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to check wishlist status", err);
+      }
+    }
+    checkWishlist();
+  }, [session, id]);
+
+  const handleWishlistToggle = async () => {
+    if (!session) {
+      window.location.href = "/login";
+      return;
+    }
+    if (togglingWishlist) return;
+    setTogglingWishlist(true);
+
+    // Optimistic toggle
+    setIsWishlisted((prev) => !prev);
+
+    try {
+      const res = await fetch("/api/wishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ spotId: id }),
+      });
+      if (!res.ok) throw new Error("Failed to toggle wishlist");
+      const data = await res.json();
+      setIsWishlisted(data.wishlisted);
+    } catch (err) {
+      // Revert optimistic update
+      setIsWishlisted((prev) => !prev);
+    } finally {
+      setTogglingWishlist(false);
+    }
+  };
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -411,8 +458,9 @@ export default function SpotDetailPage() {
               {/* Bookmark Wishlist Card */}
               <div className="border border-[var(--border)] bg-[var(--surface)] p-6 rounded-[8px] flex flex-col gap-4">
                 <button
-                  onClick={() => setIsWishlisted((w) => !w)}
-                  className={`w-full py-2.5 px-4 text-xs font-semibold uppercase tracking-wider border rounded-[8px] flex items-center justify-center gap-2 transition-colors ${
+                  onClick={handleWishlistToggle}
+                  disabled={togglingWishlist}
+                  className={`w-full py-2.5 px-4 text-xs font-semibold uppercase tracking-wider border rounded-[8px] flex items-center justify-center gap-2 transition-colors disabled:opacity-50 ${
                     isWishlisted
                       ? "bg-[var(--rust)]/5 text-[var(--rust)] border-[var(--rust)]"
                       : "bg-[var(--background)] text-[var(--text-muted)] border-[var(--border)] hover:border-[var(--text-muted)]"
