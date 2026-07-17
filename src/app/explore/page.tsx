@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -136,6 +136,7 @@ const SPOTS_DATABASE: Spot[] = [
 ];
 
 export default function ExplorePage() {
+  const [spots, setSpots] = useState<Spot[]>(SPOTS_DATABASE);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | "all">("all");
   const [sortBy, setSortBy] = useState<"popularity" | "rating" | "newest">("popularity");
@@ -143,9 +144,26 @@ export default function ExplorePage() {
   const [showMapMobile, setShowMapMobile] = useState(false);
   const [activeSpotId, setActiveSpotId] = useState<string | null>(null);
 
+  useEffect(() => {
+    async function loadSpots() {
+      try {
+        const res = await fetch("/api/spots");
+        if (res.ok) {
+          const data = await res.ok ? await res.json() : [];
+          if (Array.isArray(data) && data.length > 0) {
+            setSpots(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load spots from API:", err);
+      }
+    }
+    loadSpots();
+  }, []);
+
   // Filtered and sorted spots
   const processedSpots = useMemo(() => {
-    let result = [...SPOTS_DATABASE];
+    let result = [...spots];
 
     // Search filter
     if (search.trim()) {

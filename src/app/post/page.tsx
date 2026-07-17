@@ -108,17 +108,59 @@ export default function PostSpotPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setErrors({});
 
-    // Mock API submission latency
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Convert all photos to Base64 strings concurrently
+      const base64Images = await Promise.all(
+        form.photos.map((photo) => fileToBase64(photo))
+      );
 
-    setIsSubmitting(false);
-    setSuccess(true);
+      const payload = {
+        title: form.title,
+        description: form.description,
+        category: form.category,
+        address: form.address,
+        latitude: form.latitude || null,
+        longitude: form.longitude || null,
+        riskTags: form.riskTags,
+        images: base64Images,
+      };
+
+      const res = await fetch("/api/spots", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "failed to submit spot");
+      }
+
+      setSuccess(true);
+    } catch (err: any) {
+      console.error("Submission error:", err);
+      setErrors((prev) => ({ ...prev, title: err.message || "failed to submit spot" }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "@/lib/auth-client";
 
 const NAV_LINKS = [
   { href: "/explore", label: "Explore" },
@@ -14,7 +15,11 @@ const NAV_LINKS = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { data: session, isPending } = useSession();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -22,7 +27,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // close menu on resize above mobile breakpoint
+  // close menu on resize
   useEffect(() => {
     const onResize = () => {
       if (window.innerWidth >= 768) setMenuOpen(false);
@@ -30,6 +35,13 @@ export default function Navbar() {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  const handleLogout = async () => {
+    await signOut();
+    setDropdownOpen(false);
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <header
@@ -45,7 +57,6 @@ export default function Navbar() {
           href="/"
           className="flex items-center gap-2 shrink-0"
         >
-          {/* Compass outline icon (inline SVG — Tabler style) */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="22"
@@ -89,7 +100,6 @@ export default function Navbar() {
 
         {/* Right actions */}
         <div className="flex items-center gap-3 shrink-0">
-          {/* Search icon */}
           <button
             aria-label="Search"
             className="hidden md:flex items-center justify-center w-8 h-8 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
@@ -100,29 +110,84 @@ export default function Navbar() {
             </svg>
           </button>
 
-          {/* Post a spot CTA — desktop only */}
-          <Link
-            href="/post"
-            className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[var(--rust)] hover:bg-[#9C4830] rounded-[8px] transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Post a spot
-          </Link>
+          {/* Dynamic right menu actions based on auth session */}
+          {!isPending && (
+            <>
+              {session?.user ? (
+                /* Authenticated State */
+                <div className="relative">
+                  <button
+                    onClick={() => setDropdownOpen((d) => !d)}
+                    className="flex items-center justify-center w-8 h-8 rounded-full border border-[var(--border)] overflow-hidden hover:border-[var(--text-primary)] transition-colors focus:outline-none"
+                    aria-label="User menu"
+                  >
+                    {session.user.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={session.user.image}
+                        alt={session.user.name || "User"}
+                        className="object-cover w-full h-full grayscale"
+                      />
+                    ) : (
+                      <span className="text-xs font-semibold text-[var(--text-primary)] uppercase">
+                        {session.user.name?.charAt(0)}
+                      </span>
+                    )}
+                  </button>
 
-          {/* Avatar / Log in */}
-          <Link
-            href="/login"
-            className="flex items-center justify-center w-8 h-8 rounded-[8px] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--text-muted)] transition-colors text-xs font-medium"
-            aria-label="Log in"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </Link>
+                  {/* Dropdown Menu */}
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2.5 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-[8px] py-1.5 flex flex-col z-50">
+                      <div className="px-3.5 py-2 border-b border-[var(--border)] text-xs">
+                        <span className="font-semibold block text-[var(--text-primary)] truncate">
+                          {session.user.name}
+                        </span>
+                        <span className="text-[var(--text-muted)] truncate block mt-0.5">
+                          {session.user.email}
+                        </span>
+                      </div>
+                      <Link
+                        href="/wishlist"
+                        onClick={() => setDropdownOpen(false)}
+                        className="px-3.5 py-2 text-xs text-[var(--text-primary)] hover:bg-[var(--background)] transition-colors text-left"
+                      >
+                        My wishlist
+                      </Link>
+                      <Link
+                        href="/post"
+                        onClick={() => setDropdownOpen(false)}
+                        className="px-3.5 py-2 text-xs text-[var(--text-primary)] hover:bg-[var(--background)] transition-colors text-left"
+                      >
+                        Post a spot
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="px-3.5 py-2 text-xs text-[var(--rust)] hover:bg-[var(--background)] transition-colors text-left border-t border-[var(--border)]"
+                      >
+                        Log out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Unauthenticated State */
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/login"
+                    className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] hover:text-[var(--text-primary)] px-3 py-1.5 transition-colors border border-[var(--border)] rounded-[8px] hover:border-[var(--text-muted)]"
+                  >
+                    Sign up
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-white bg-[var(--rust)] hover:bg-[#9C4830] rounded-[8px] transition-colors"
+                  >
+                    Quick start
+                  </Link>
+                </div>
+              )}
+            </>
+          )}
 
           {/* Hamburger — mobile only */}
           <button
@@ -167,13 +232,43 @@ export default function Navbar() {
               </Link>
             );
           })}
-          <Link
-            href="/post"
-            onClick={() => setMenuOpen(false)}
-            className="mt-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-[var(--rust)] hover:bg-[#9C4830] rounded-[8px] transition-colors"
-          >
-            Post a spot
-          </Link>
+
+          {!isPending && session?.user && (
+            <>
+              <Link
+                href="/wishlist"
+                onClick={() => setMenuOpen(false)}
+                className="py-2.5 text-sm border-b border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+              >
+                My wishlist
+              </Link>
+              <button
+                onClick={() => { setMenuOpen(false); handleLogout(); }}
+                className="py-2.5 text-sm text-[var(--rust)] text-left transition-colors"
+              >
+                Log out
+              </button>
+            </>
+          )}
+
+          {!isPending && !session?.user && (
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <Link
+                href="/login"
+                onClick={() => setMenuOpen(false)}
+                className="py-2 text-center text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] border border-[var(--border)] rounded-[8px] hover:border-[var(--text-muted)] transition-colors"
+              >
+                Sign up
+              </Link>
+              <Link
+                href="/register"
+                onClick={() => setMenuOpen(false)}
+                className="py-2 text-center text-xs font-semibold uppercase tracking-wider text-white bg-[var(--rust)] hover:bg-[#9C4830] rounded-[8px] transition-colors"
+              >
+                Quick start
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </header>
