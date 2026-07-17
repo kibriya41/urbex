@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
   { href: "/explore", label: "Explore" },
@@ -13,7 +14,7 @@ const NAV_LINKS = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeHref, setActiveHref] = useState("/");
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -33,7 +34,7 @@ export default function Navbar() {
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${
-        scrolled
+        scrolled || pathname !== "/"
           ? "bg-[var(--background)] border-b border-[var(--border)]"
           : "bg-transparent border-b border-transparent"
       }`}
@@ -43,7 +44,6 @@ export default function Navbar() {
         <Link
           href="/"
           className="flex items-center gap-2 shrink-0"
-          onClick={() => setActiveHref("/")}
         >
           {/* Compass outline icon (inline SVG — Tabler style) */}
           <svg
@@ -70,12 +70,11 @@ export default function Navbar() {
         {/* Desktop nav links */}
         <nav className="hidden md:flex items-center gap-6" aria-label="Main navigation">
           {NAV_LINKS.map((link) => {
-            const isActive = activeHref === link.href;
+            const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                onClick={() => setActiveHref(link.href)}
                 className={`text-sm transition-colors pb-0.5 ${
                   isActive
                     ? "text-[var(--rust)] border-b border-[var(--rust)]"
@@ -152,12 +151,12 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden bg-[var(--background)] border-b border-[var(--border)] px-4 pb-4 pt-2 flex flex-col gap-1">
           {NAV_LINKS.map((link) => {
-            const isActive = activeHref === link.href;
+            const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                onClick={() => { setActiveHref(link.href); setMenuOpen(false); }}
+                onClick={() => { setMenuOpen(false); }}
                 className={`py-2.5 text-sm border-b border-[var(--border)] last:border-b-0 transition-colors ${
                   isActive
                     ? "text-[var(--rust)]"
