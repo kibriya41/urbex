@@ -15,6 +15,8 @@ const MOCK_FALLBACK_SPOTS = [
     reviewCount: 38,
     image: "/spot-factory.png",
     riskTag: "trespassing risk",
+    latitude: 51.3397,
+    longitude: 12.3731,
     description: "A decaying 19th-century textile factory with collapsing roofs, rusted iron machinery, and spectacular skylight shafts.",
   },
   {
@@ -25,6 +27,8 @@ const MOCK_FALLBACK_SPOTS = [
     rating: 4.5,
     reviewCount: 61,
     image: "/spot-ruins.png",
+    latitude: 53.1934,
+    longitude: -2.8931,
     description: "Deeply historical ruins of defensive walls built during Roman occupation, overgrown with moss and ivy.",
   },
   {
@@ -36,6 +40,8 @@ const MOCK_FALLBACK_SPOTS = [
     reviewCount: 24,
     image: "/spot-viewpoint.png",
     riskTag: "permission needed",
+    latitude: 48.2082,
+    longitude: 16.3738,
     description: "An incredible viewpoint from the rusty crown of an old gasometer structure, offering a panoramic city view.",
   },
   {
@@ -47,6 +53,8 @@ const MOCK_FALLBACK_SPOTS = [
     reviewCount: 19,
     image: "/spot-tunnel.png",
     riskTag: "trespassing risk",
+    latitude: 44.4396,
+    longitude: 26.1012,
     description: "A dry, subterranean brick stormwater bypass tunnel originating from the mid-20th century. High humidity.",
   },
 ];
@@ -93,6 +101,8 @@ export async function GET(req: NextRequest) {
             image: spot.images && spot.images.length > 0 ? spot.images[0] : "/spot-factory.png",
             riskTag: spot.riskTags && spot.riskTags.length > 0 ? spot.riskTags[0] : undefined,
             description: spot.description,
+            latitude: spot.latitude ? Number(spot.latitude) : null,
+            longitude: spot.longitude ? Number(spot.longitude) : null,
           });
         }
       } else {

@@ -165,6 +165,18 @@ export default function Navbar() {
                           Admin Dashboard
                         </Link>
                       )}
+                      {/* My Profile link */}
+                      <Link
+                        href="/profile"
+                        onClick={() => setDropdownOpen(false)}
+                        className="px-3.5 py-2 text-xs text-[var(--text-primary)] hover:bg-[var(--background)] transition-colors text-left flex items-center gap-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        My profile
+                      </Link>
                       <Link
                         href="/wishlist"
                         onClick={() => setDropdownOpen(false)}
@@ -270,6 +282,14 @@ export default function Navbar() {
                   Admin Dashboard
                 </Link>
               )}
+              {/* My Profile — mobile */}
+              <Link
+                href="/profile"
+                onClick={() => setMenuOpen(false)}
+                className="py-2.5 text-sm border-b border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+              >
+                My profile
+              </Link>
               <Link
                 href="/wishlist"
                 onClick={() => setMenuOpen(false)}
