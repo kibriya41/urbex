@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-const CATEGORIES = [
+const CATEGORY_DEFS = [
   {
     id: "abandoned-building",
+    key: "abandoned building",
     label: "Abandoned Buildings",
-    count: 482,
     description: "Forgotten factories, asylums, and decaying estates frozen in time.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -13,13 +13,12 @@ const CATEGORIES = [
       </svg>
     ),
     href: "/explore?category=abandoned+building",
-    accent: "var(--rust)",
     accentClass: "text-[var(--rust)] bg-[var(--rust)]/8 border-[var(--rust)]/20",
   },
   {
     id: "ruins",
+    key: "ruins",
     label: "Ruins & Heritage",
-    count: 314,
     description: "Ancient walls, overgrown foundations, and crumbling architecture.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -30,13 +29,12 @@ const CATEGORIES = [
       </svg>
     ),
     href: "/explore?category=ruins",
-    accent: "var(--moss)",
     accentClass: "text-[var(--moss)] bg-[var(--moss)]/8 border-[var(--moss)]/20",
   },
   {
     id: "viewpoint",
+    key: "viewpoint",
     label: "Rooftop Viewpoints",
-    count: 197,
     description: "Reach city-high vantage points for breathtaking panoramic views.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -46,13 +44,12 @@ const CATEGORIES = [
       </svg>
     ),
     href: "/explore?category=viewpoint",
-    accent: "var(--warning)",
     accentClass: "text-[var(--warning)] bg-[var(--warning)]/8 border-[var(--warning)]/20",
   },
   {
     id: "underground",
+    key: "underground",
     label: "Underground & Tunnels",
-    count: 143,
     description: "Storm drains, catacombs, bunkers, and hidden subterranean networks.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -62,13 +59,12 @@ const CATEGORIES = [
       </svg>
     ),
     href: "/explore?category=underground",
-    accent: "var(--text-muted)",
     accentClass: "text-[var(--text-muted)] bg-[var(--background)] border-[var(--border)]",
   },
   {
     id: "hidden-gem",
+    key: "hidden gem",
     label: "Hidden Gems",
-    count: 104,
     description: "Off-the-radar finds — secret gardens, forgotten monuments, and local curiosities.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -76,12 +72,16 @@ const CATEGORIES = [
       </svg>
     ),
     href: "/explore?category=hidden+gem",
-    accent: "var(--rust)",
     accentClass: "text-[var(--rust)] bg-[var(--rust)]/8 border-[var(--rust)]/20",
   },
 ];
 
-export default function CategoryGrid() {
+interface CategoryGridProps {
+  byCategory: Record<string, number>;
+  totalSpots: number;
+}
+
+export default function CategoryGrid({ byCategory, totalSpots }: CategoryGridProps) {
   return (
     <section
       className="py-20 sm:py-28 bg-[var(--background)] border-t border-[var(--border)]"
@@ -103,42 +103,45 @@ export default function CategoryGrid() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {CATEGORIES.map((cat) => (
-            <Link
-              key={cat.id}
-              href={cat.href}
-              className="group relative flex flex-col gap-4 p-6 border border-[var(--border)] bg-[var(--surface)] rounded-[8px] hover:border-[var(--text-muted)] transition-colors overflow-hidden"
-            >
-              {/* Count watermark */}
-              <span className="absolute top-4 right-5 text-5xl font-bold text-[var(--border)] select-none tabular-nums leading-none transition-colors group-hover:text-[var(--text-muted)]/30">
-                {cat.count}
-              </span>
+          {CATEGORY_DEFS.map((cat) => {
+            const count = byCategory[cat.key] ?? 0;
+            return (
+              <Link
+                key={cat.id}
+                href={cat.href}
+                className="group relative flex flex-col gap-4 p-6 border border-[var(--border)] bg-[var(--surface)] rounded-[8px] hover:border-[var(--text-muted)] transition-colors overflow-hidden"
+              >
+                {/* Count watermark */}
+                <span className="absolute top-4 right-5 text-5xl font-bold text-[var(--border)] select-none tabular-nums leading-none transition-colors group-hover:text-[var(--text-muted)]/30">
+                  {count}
+                </span>
 
-              {/* Icon */}
-              <div className={`flex items-center justify-center w-10 h-10 border rounded-[8px] ${cat.accentClass}`}>
-                {cat.icon}
-              </div>
+                {/* Icon */}
+                <div className={`flex items-center justify-center w-10 h-10 border rounded-[8px] ${cat.accentClass}`}>
+                  {cat.icon}
+                </div>
 
-              {/* Text */}
-              <div>
-                <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1.5 group-hover:text-[var(--rust)] transition-colors">
-                  {cat.label}
-                </h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  {cat.description}
-                </p>
-              </div>
+                {/* Text */}
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1.5 group-hover:text-[var(--rust)] transition-colors">
+                    {cat.label}
+                  </h3>
+                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                    {cat.description}
+                  </p>
+                </div>
 
-              {/* Arrow */}
-              <div className="mt-auto flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-[var(--rust)] transition-colors">
-                Browse spots
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="translate-x-0 group-hover:translate-x-1 transition-transform">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </div>
-            </Link>
-          ))}
+                {/* Arrow */}
+                <div className="mt-auto flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-[var(--rust)] transition-colors">
+                  Browse spots
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="translate-x-0 group-hover:translate-x-1 transition-transform">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </div>
+              </Link>
+            );
+          })}
 
           {/* All Spots tile */}
           <Link
@@ -154,7 +157,9 @@ export default function CategoryGrid() {
               <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
                 See everything
               </h3>
-              <p className="text-xs text-[var(--text-muted)]">Browse all 1,240+ spots on the full map.</p>
+              <p className="text-xs text-[var(--text-muted)]">
+                Browse all {totalSpots > 0 ? `${totalSpots.toLocaleString()}+` : ""} spots on the full map.
+              </p>
             </div>
           </Link>
         </div>

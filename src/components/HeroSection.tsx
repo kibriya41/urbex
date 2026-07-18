@@ -1,10 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function HeroSection() {
+interface HeroStats {
+  spotCount: number;
+  userCount: number;
+  cityCount: number;
+}
+
+export default function HeroSection({ stats }: { stats: HeroStats }) {
+  const { spotCount, userCount, cityCount } = stats;
+
   return (
     <section
-      className="relative min-h-[85vh] flex items-center justify-center overflow-hidden"
+      className="relative min-h-[70vh] flex items-center justify-center overflow-hidden"
       aria-label="Hero"
     >
       {/* Background image */}
@@ -74,15 +82,21 @@ export default function HeroSection() {
         {/* Stats bar */}
         <div className="mt-8 flex items-center gap-6 text-white/50 text-xs tracking-wide divide-x divide-white/20">
           <div className="text-center pr-6">
-            <span className="block text-xl font-semibold text-white/80 tabular-nums">1,240</span>
+            <span className="block text-xl font-semibold text-white/80 tabular-nums">
+              {spotCount.toLocaleString()}
+            </span>
             spots cataloged
           </div>
           <div className="text-center px-6">
-            <span className="block text-xl font-semibold text-white/80 tabular-nums">380</span>
+            <span className="block text-xl font-semibold text-white/80 tabular-nums">
+              {userCount.toLocaleString()}
+            </span>
             explorers
           </div>
           <div className="text-center pl-6">
-            <span className="block text-xl font-semibold text-white/80 tabular-nums">47</span>
+            <span className="block text-xl font-semibold text-white/80 tabular-nums">
+              {cityCount.toLocaleString()}
+            </span>
             cities
           </div>
         </div>
